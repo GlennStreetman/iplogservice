@@ -9,5 +9,5 @@
 
 ## See lambda > postIP.js example
 
-- postIP.js is an example of an AWS Lambda function that could be used to log your, and your teams, public IP addressess to DynamoDB
+- postIP.js is an example of an [AWS Lambda](https://aws.amazon.com/lambda/) function that could be used to log your, and your teams, public IP addressess to [DynamoDB](https://aws.amazon.com/dynamodb/)
 - Target DynamoDB table would require: Partition Key: username, Sort Key: ipaddress
