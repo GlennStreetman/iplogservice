@@ -137,8 +137,8 @@ function App() {
                 <TextField value={hook} onChange={handleSetHook} id="outlined-basic" label="Webhook" variant="outlined" />
                 <TextField value={userId} onChange={handleUserId} id="outlined-basic" label="UserId/Email" variant="outlined" />
                 <MapParams params={params} setParams={setParams} />
-                <Button variant="contained" sx={{ width: '100%', margin: "auto" }} className="icons">
-                    Public IP: {myIP}  <BiCopy onClick={()=>{navigator.clipboard.writeText(myIP)}} />
+                <Button onClick={()=>{navigator.clipboard.writeText(myIP)}} variant="contained" sx={{ width: '100%', margin: "auto" }} className="icons">
+                    Public IP: {myIP}  <BiCopy  />
                 </Button>
                 <Button sx={{ width: '100%', margin: "auto" }} variant="contained" onClick={(logIP)}>Log IP Address</Button>
                 <Box sx={{display: "flex", fontSize: "2rem" }} className="icons">
