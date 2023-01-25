@@ -36,6 +36,24 @@ function MapParams({params, setParams}){
     return mapParams
 }
 
+async function postIP(url, data) {
+    console.log('posting IP update')
+    const formatData = JSON.stringify(data)
+    console.log(formatData)
+    const response = await fetch(url, {
+        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, *cors, same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        body: formatData // body data type must match "Content-Type" header
+    })
+    const format = await response.json()
+    console.log(format)
+}
+
 function App() {
 
     const [userId, setUserId] = useState('')
@@ -64,6 +82,19 @@ function App() {
         setParams(newParamsArray)
     }
 
+    function logIP(){
+        if (myIP && hook){
+            const todayDate = new Date().toISOString().slice(0, 10)
+            const data = {
+                ip: myIP,
+                userid: userId,
+                date: todayDate,
+            }
+            if (params) data['meta'] = params
+            postIP(hook, data)
+        }
+    }
+
     useEffect(()=>{
         chrome.storage.sync.get(["userId"]).then((result) => {
             if(result.userId)setUserId(result['userId'])
@@ -75,7 +106,7 @@ function App() {
         
         chrome.storage.sync.get(["params"]).then((result) => {
             const stringParams = result['params']
-            const convertParams = JSON.parse(stringParams)
+            const convertParams = stringParams ? JSON.parse(stringParams) : false
             setParams(convertParams)
         });
 
@@ -106,25 +137,16 @@ function App() {
     },[hook])
 
     useEffect(()=>{
-        const paramString = JSON.stringify(params)
-            chrome.storage.sync.set({"params": paramString})
+        const paramString = params ? JSON.stringify(params) : false
+            if (paramString) chrome.storage.sync.set({"params": paramString})
     },[params])
 
     useEffect(()=>{
         if (newIP === true){
             setNewIP(false)
-            if (myIP && hook){
-                const todayDate = new Date().toISOString().slice(0, 10)
-                chrome.storage.sync.set({"myIP": myIP})
-                fetch(`${hook}?ip=${myIP}&userid=${userId}&date=${todayDate}`, {method: 'GET', mode: 'no-cors'})
-            }
+            logIP()
         }
     },[newIP])
-
-    function logIP(){
-        const todayDate = new Date().toISOString().slice(0, 10)
-        fetch(`${hook}?ip=${myIP}&userid=${userId}&date=${todayDate}`, {method: 'GET', mode: 'no-cors'})
-    }
 
     return (
         <div className="App">

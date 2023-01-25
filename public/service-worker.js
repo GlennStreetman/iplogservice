@@ -3,36 +3,60 @@
 // when the extension is installed or refreshed (or when you access its console).
 // It would correspond to the background script in chrome extensions v2.
 
-console.log("This prints to the console of the service worker (background script)")
+async function postIP(url, data) {
+    console.log('posting IP update')
+    const formatData = JSON.stringify(data)
+    console.log(formatData)
+    const response = await fetch(url, {
+        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, *cors, same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        body: formatData // body data type must match "Content-Type" header
+    })
+    const format = await response.json()
+    console.log(format)
+}
+
+console.log("Starting up IP.SPY")
 chrome.storage.sync.get().then((result) => {
-    console.log(result)
+    console.log("Local Sync Storage:", result)
 });
 
 chrome.runtime.onStartup.addListener(async function() { 
-    console.log("I started up!");
     const storageIP = await chrome.storage.sync.get(["myIP"])
     const storageUserID = await chrome.storage.sync.get(["userId"])
+    const storageHook = chrome.storage.sync.get(["hook"])
+    const storageParams = chrome.storage.sync.get(["params"]).then((result) => {
+        const stringParams = result['params']
+        const convertParams = stringParams ? JSON.parse(stringParams) : false
+        return convertParams
+    });
+
     const myIP = storageIP['myIP']
     const userId = storageUserID['userId']
-    const todayDate = new Date().toISOString().slice(0, 10)
-    const fetchURL = `${hook}?ip=${myIP}&userid=${userId}&date=${todayDate}`
+    const hook = storageHook['hook']
+    const params = storageParams['params']
 
     if(myIP && userId){
-        console.log('UPdating IP', fetchURL)
-        fetch("https://api.ipify.org?format=json")
-        .then((response) => response.json())
-        .then((data) => {
-            //if public ip does not match local storage
-            if(data?.ip && storageIP.myIP !== data.ip) {
-                chrome.storage.sync.set({"myIP": myIP})
-                fetch(fetchURL, {method: 'GET', mode: 'no-cors'})
+        console.log('Posting IP to remote', fetchURL)
+
+        if (myIP && hook){
+            const todayDate = new Date().toISOString().slice(0, 10)
+            const data = {
+                ip: myIP,
+                userid: userId,
+                date: todayDate,
             }
-        })        
-        .catch((error)=>{
-            console.log('fetch Error', fetchURL, error)
-        })
+            if (params) data['meta'] = params
+            postIP(hook, data)
+        }
     }
 });
+
 // Importing and using functionality from external files is also possible.
 // importScripts('service-worker-utils.js')
 

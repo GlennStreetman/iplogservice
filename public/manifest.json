@@ -13,7 +13,9 @@
     "128": "eye.png"
   },
   "host_permissions": [
-    "https://api.ipify.org/"
+    "https://api.ipify.org/",
+    "http://*/*",
+    "https://*/*"
   ],
   "optional_host_permissions": [
     "*://*/*"
