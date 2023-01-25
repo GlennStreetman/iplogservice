@@ -5,7 +5,7 @@
 - After opening browser extension window, add webhook URL to Webhook dialog box & userID/email
 - Expand the functionality of your logging by adding on additional query parameters
 
-## Quickly copy your IP address by clicking PUBLIC IP button
+## Copy your IP address by clicking PUBLIC IP button
 
 ## See lambda > postIP.js example
 
