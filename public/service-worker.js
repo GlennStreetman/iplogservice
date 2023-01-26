@@ -21,6 +21,23 @@ async function postIP(url, data) {
     console.log(format)
 }
 
+function updateIP(myIP,userId, hook, params){
+    if(myIP && userId){
+        console.log('Posting IP to remote', fetchURL)
+
+        if (myIP && hook){
+            const todayDate = new Date().toISOString().slice(0, 10)
+            const data = {
+                ip: myIP,
+                userid: userId,
+                date: todayDate,
+            }
+            if (params) data['meta'] = params
+            postIP(hook, data)
+        }
+    }
+}
+
 console.log("Starting up IP.SPY")
 chrome.storage.sync.get().then((result) => {
     console.log("Local Sync Storage:", result)
@@ -41,20 +58,19 @@ chrome.runtime.onStartup.addListener(async function() {
     const hook = storageHook['hook']
     const params = storageParams['params']
 
-    if(myIP && userId){
-        console.log('Posting IP to remote', fetchURL)
+    updateIP(myIP,userId, hook, params)
 
-        if (myIP && hook){
-            const todayDate = new Date().toISOString().slice(0, 10)
-            const data = {
-                ip: myIP,
-                userid: userId,
-                date: todayDate,
-            }
-            if (params) data['meta'] = params
-            postIP(hook, data)
+    function loop() {
+        var d = new Date(),
+            h = new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours() + 1, 0, 0, 0),
+            e = h - d;
+        if (e > 100) { // some arbitrary time period
+            updateIP(myIP,userId, hook, params)
+            window.setTimeout(loop, e);
         }
     }
+    loop()
+
 });
 
 // Importing and using functionality from external files is also possible.
