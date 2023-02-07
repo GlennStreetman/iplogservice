@@ -12,42 +12,8 @@ exports.handler = async (event, context) => {
 
     try {
 
-        
         switch (event.httpMethod) {
-            case 'GET':
-                console.log(event?.["queryStringParameters"])
-                const logIP = event?.["queryStringParameters"]?.['ip'] || false
-                const user = event?.["queryStringParameters"]?.['userid'] || false
-                const date = event?.["queryStringParameters"]?.['date'] || 'pass'
-                let meta = event?.["queryStringParameters"]?.['meta'] || false
-                if (meta !== false) meta = JSON.parse(`${meta}`)
-                console.log("meta", meta, typeof meta)
-            
-                let insertMeta = ''
-                if (meta) {
-                        for(const [key,val] of Object.entries(meta)){
-                        insertMeta = `${insertMeta}, '${key}': '${val}'`
-                    }
-                }
-                let insertStatement = `INSERT INTO "iplog" value {'ipaddress': '${logIP}', 'username': '${user}', 'logdate': '${date}'${insertMeta}}`
-                
-                let updateMeta = ''
-                if (meta) {
-                    for(const [key,val] of Object.entries(meta)){
-                        updateMeta = `${updateMeta}, ${key}='${val}'`
-                    }
-                }
-                let updateStatement = `UPDATE iplog SET logdate='${date}' ${updateMeta} WHERE ipaddress='${logIP}' AND username='${user}'`
 
-                if(logIP && user) try {
-                    console.log('insert', insertStatement)
-                    await dynamo.executeStatement({Statement: insertStatement}).promise();
-                    break;
-                } catch {
-                    console.log('update', updateStatement)
-                    await dynamo.executeStatement({Statement: updateStatement}).promise();
-                    break;
-                }
             case 'POST':
                 console.log('POST', event.body)
                 const parseBody = JSON.parse(event.body)
@@ -58,6 +24,7 @@ exports.handler = async (event, context) => {
 
                 let insMeta = ''
                 if (postMeta) {
+                    console.log("postMeta", postMeta)
                         for(const [key,val] of Object.entries(postMeta)){
                             insMeta = `${insMeta}, '${key}': '${val}'`
                     }
