@@ -18,8 +18,10 @@ function App() {
     const [rows, setRows] = useState([])
     const [IPList, setIPList] = useState()
 
+    console.log('url', process.env.url)
+
     useEffect(()=>{
-        fetch('https://148w099x7j.execute-api.us-east-2.amazonaws.com/default/getIP')
+        fetch(`${process.env.REACT_APP_url}`)
         .then((response) => response.json())
         .then((data) => setIps(data))
         .catch((err)=>{console.log(err)})    
@@ -46,9 +48,8 @@ function App() {
     return (
         <>
         <div sx={{width: '800px'}}  className="App-header">
-        Full List of IP Addresses:
         <Button  onClick={() =>  navigator.clipboard.writeText(IPList)}>
-            {IPList} <AiOutlineCopy />
+            Copy All IP Addresses <AiOutlineCopy />
         </Button>
         <div className={{width: "800px"}}>
         <TableContainer x={{ minWidth: 650, width: '800px' }}  component={Paper}>
