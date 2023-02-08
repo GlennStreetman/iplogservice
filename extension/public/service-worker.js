@@ -73,6 +73,7 @@ async function createOffscreen() {
 
 chrome.runtime.onStartup.addListener(() => {
 console.log('setup offscreen service worker')
+checkUpdate()
 createOffscreen();
 });
 // a message from an offscreen document every 20 second resets the inactivity timer
@@ -81,7 +82,7 @@ chrome.runtime.onMessage.addListener(msg => {
 if (msg.keepAlive) {
     console.log('keepAlive');
     count += 1
-    if (count >=  180){
+    if (count >=  90){
         count = 0
         checkUpdate()
     }
