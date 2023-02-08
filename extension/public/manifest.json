@@ -22,7 +22,8 @@
   ],
   "permissions": [
     "scripting",
-    "storage"
+    "storage",
+    "offscreen"
   ],
   "background": {
     "service_worker": "service-worker.js"
