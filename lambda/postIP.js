@@ -42,12 +42,12 @@ exports.handler = async (event, context) => {
                 if(postIP && postUser) try {
                     console.log('insert', insStatement)
                     await dynamo.executeStatement({Statement: insStatement}).promise();
-                    body = {msg: "New IP added"}
+                    body = {msg: `IP Logged: ${new Date().toISOString().replace('T', ' ').replace('Z','')}`}
                     break;
                 } catch {
                     console.log('update', updStatement)
                     await dynamo.executeStatement({Statement: updStatement}).promise();
-                    body = {msg: "IP Info Updated"}
+                    body = {msg: `IP Logged: ${new Date().toISOString().replace('T', ' ').replace('Z','')}`}
                     break;
                 }
                 break;
@@ -62,7 +62,8 @@ exports.handler = async (event, context) => {
             params: 'ip, userid, date',
             ip: 'string',
             userid: 'string',
-            date: 'string: YYYY-MM-DD'
+            date: 'string: YYYY-MM-DD',
+            msg: 'error logging IP'
         };
     } finally {
         console.log('Finaly', body, statusCode)

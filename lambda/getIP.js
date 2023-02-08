@@ -7,7 +7,11 @@ exports.handler = async (event, context) => {
     let body;
     let statusCode = '200';
     const headers = {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
+        "Access-Control-Allow-Headers" : 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+        "Access-Control-Allow-Credentials": true,
     };
 
     try {
@@ -17,6 +21,8 @@ exports.handler = async (event, context) => {
                 let getIPS = `SELECT * FROM "iplog"`
                 const ips = await dynamo.executeStatement({Statement: getIPS}).promise();
                 body = ips
+                break;
+            case 'OPTIONS':
                 break;
             default:
                 throw new Error(`Unsupported method "${event.httpMethod}"`);
@@ -30,6 +36,7 @@ exports.handler = async (event, context) => {
     } finally {
         console.log('Finaly', body, statusCode)
         body = JSON.stringify(body);
+        console.log('return body', body, typeof body, 'header', headers)
     }
     return {
         statusCode,

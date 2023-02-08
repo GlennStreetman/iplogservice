@@ -11,3 +11,8 @@
 ### .env setup
 
 REACT_APP_url = getIP lambda URL
+
+### .env file
+
+apiURL=api.example.com
+apikey=xxxxxxxxxxxxxx

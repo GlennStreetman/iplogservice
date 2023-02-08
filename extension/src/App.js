@@ -6,53 +6,10 @@ import Button from '@mui/material/Button';
 import './App.css';
 import {BiCopy} from 'react-icons/bi';
 import {AiOutlineCheckCircle} from 'react-icons/ai'
-import {IoIosRemoveCircle} from 'react-icons/io'
 
+import MapParams from '../components/MapParams'
 
-function Param({thisKey, val, params, setParams}){
-
-    function deleteKey(){
-        const newObj = {...params}
-        delete newObj[thisKey]
-        setParams(newObj)
-    }
-    
-
-    function updateParams(e){
-        setParams({...params, [thisKey]: e.target.value})
-    }
-    return (
-        <Box sx={{position: 'relative'}}>
-            <TextField sx={{width: '375px'}}value={val} onChange={updateParams} id="outlined-basic" label={thisKey} variant="outlined" />
-            <Button onClick={deleteKey} sx={{position: 'absolute', top: '10px', right: '0px', fontSize: '1.25rem'}}><IoIosRemoveCircle /></Button>
-        </Box>
-    )
-}
-
-function MapParams({params, setParams}){
-
-    const mapParams = params ? Object.entries(params).map(([el, val])=>{return <Box key={el}><Param thisKey={el} val={val} params={params} setParams={setParams} /></Box>}) : <></>
-
-    return mapParams
-}
-
-async function postIP(url, data) {
-    console.log('posting IP update')
-    const formatData = JSON.stringify(data)
-    console.log(formatData)
-    const response = await fetch(url, {
-        method: 'POST', // *GET, POST, PUT, DELETE, etc.
-        mode: 'cors', // no-cors, *cors, same-origin
-        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-        body: formatData // body data type must match "Content-Type" header
-    })
-    const format = await response.json()
-    console.log(format)
-}
+import postIP from '../lib/postIP'
 
 function App() {
 
@@ -62,21 +19,9 @@ function App() {
     const [newIP, setNewIP] = useState(false)
     const [params, setParams] = useState()
     const [newParam, setNewParam] = useState('')
+    const [msg, updateMsg] = useState()
 
-    function handleUserId(e){
-        setUserId(e.target.value)
-    }
-    
-    function handleSetHook(e){
-        setHook(e.target.value)
-    }
-    
-    function hanldeSetParam(e){
-        setNewParam(e.target.value)
-    }
-
-    function addNewParam(e){
-        e.preventDefault()
+    function addNewParam(){
         const newParamsArray = {...params, [newParam]: ''}
         setNewParam('')
         setParams(newParamsArray)
@@ -84,6 +29,7 @@ function App() {
 
     function logIP(){
         if (myIP && hook){
+            console.log('attempting to log ip')
             const todayDate = new Date().toISOString().slice(0, 10)
             const data = {
                 ip: myIP,
@@ -91,7 +37,7 @@ function App() {
                 date: todayDate,
             }
             if (params) data['meta'] = params
-            postIP(hook, data)
+            postIP(hook, data, updateMsg)
         }
     }
 
@@ -156,20 +102,24 @@ function App() {
                 IP.SPY
             </Box>
             <Box sx={{padding: "2px", display: "flex", gap: "16px", flexDirection: "column"}} component="span">
-                <TextField value={hook} onChange={handleSetHook} id="outlined-basic" label="Webhook" variant="outlined" />
-                <TextField value={userId} onChange={handleUserId} id="outlined-basic" label="UserId/Email" variant="outlined" />
+                <TextField value={hook} onChange={(e)=>setHook(e.target.value)} id="outlined-basic" label="Webhook" variant="outlined" />
+                <TextField value={userId} onChange={(e)=>setUserId(e.target.value)} id="outlined-basic" label="UserId/Email" variant="outlined" />
                 <MapParams params={params} setParams={setParams} />
                 <Button onClick={()=>{navigator.clipboard.writeText(myIP)}} variant="contained" sx={{ width: '100%', margin: "auto" }} className="icons">
                     Public IP: {myIP}  <BiCopy  />
                 </Button>
                 <Button sx={{ width: '100%', margin: "auto" }} variant="contained" onClick={(logIP)}>Log IP Address</Button>
                 <Box sx={{display: "flex", fontSize: "2rem" }} className="icons">
-                    <TextField value={newParam} onChange={hanldeSetParam} sx={{ width: '80%'}} id="outlined-basic" label="New Query Parameter" variant="outlined" />
+                    <TextField value={newParam} onChange={(e)=>setNewParam(e.target.value)} sx={{ width: '80%'}} id="outlined-basic" label="New Query Parameter" variant="outlined" />
                     <Button sx={{display: "flex", fontSize: "2rem" }} onClick={addNewParam}>
                         <AiOutlineCheckCircle />
                     </Button>
                 </Box>
             </Box>
+            <Box sx={{marginTop: "8px"}}>
+                {msg}
+            </Box>
+    
         </div>
     );
 }

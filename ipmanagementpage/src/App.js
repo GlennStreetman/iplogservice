@@ -18,10 +18,8 @@ function App() {
     const [rows, setRows] = useState([])
     const [IPList, setIPList] = useState()
 
-    console.log('url', process.env.url)
-
     useEffect(()=>{
-        fetch(`${process.env.REACT_APP_url}`)
+        fetch(`${process.env.REACT_APP_apiURL}`, {method:'GET', headers: {"x-api-key": process.env.REACT_APP_apiKey}, 'Content-Type': 'application/json'})
         .then((response) => response.json())
         .then((data) => setIps(data))
         .catch((err)=>{console.log(err)})    

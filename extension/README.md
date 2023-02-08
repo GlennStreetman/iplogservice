@@ -26,6 +26,10 @@
 - navigate to root directory of this project and import
 - hot module reloading should now be enabled
 
+
+### Production
+
+> npm install
 > npm run build
 
 - build production version of app.
