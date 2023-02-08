@@ -1,8 +1,7 @@
-async function postIP(url, data, updateMsg) {
+async function postIP(url, data, updateMsg=false) {
     try{
         console.log('posting IP update')
         const formatData = JSON.stringify(data)
-        console.log(formatData)
         const response = await fetch(url, {
             method: 'POST', // *GET, POST, PUT, DELETE, etc.
             mode: 'cors', // no-cors, *cors, same-origin
@@ -15,10 +14,10 @@ async function postIP(url, data, updateMsg) {
         })
         const format = await response.json()
         if(format?.msg) updateMsg(format.msg)
-        console.log(format)
+        chrome.storage.sync.set({"myIP": data.ip})
     } catch(err){
         console.log('Error Logging IP: ', err)
-        updateMsg('Error loggin IP, review webhook and check logs')
+        if (updateMesg) updateMsg('Error loggin IP, review webhook and check logs')
     }
 }
 
