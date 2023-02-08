@@ -1,7 +1,7 @@
 body {
   padding: 2px;
   min-width: 375px;
-  min-height: 450px;
+  min-height: max-content;
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
