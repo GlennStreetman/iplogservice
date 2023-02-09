@@ -3,7 +3,7 @@ const AWS = require('aws-sdk');
 const dynamo = new AWS.DynamoDB();
 
 exports.handler = async (event, context) => {
-
+    //remember to migrate all changes to cloudformation template. Code is inlined as part of template
     let body;
     let statusCode = '200';
     const headers = {

@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >-
+  IP Logging service data storage.
+Parameters:
+  ReadCapacityUnits:
+    Description: Provisioned read throughput
+    Type: Number
+    Default: '5'
+    MinValue: '5'
+    MaxValue: '10000'
+    ConstraintDescription: must be between 5 and 10000
+  WriteCapacityUnits:
+    Description: Provisioned write throughput
+    Type: Number
+    Default: '10'
+    MinValue: '5'
+    MaxValue: '10000'
+    ConstraintDescription: must be between 5 and 10000
+Resources:
+  iplog:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: iplog
+      AttributeDefinitions:
+          - AttributeName: username
+            AttributeType: S
+          - AttributeName: ipaddress
+            AttributeType: S
+      KeySchema:
+        - AttributeName: username
+          KeyType: HASH
+        - AttributeName: ipaddress
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits:
+          Ref: ReadCapacityUnits
+        WriteCapacityUnits:
+          Ref: WriteCapacityUnits
+Outputs:
+  TableName:
+    Value:
+      Ref: iplog
+    Description: DynamoDB table that keeps track of logged IPs

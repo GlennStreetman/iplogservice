@@ -1,0 +1,219 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  getIPLambda:
+    Type: 'AWS::Lambda::Function'
+    Description: 'IP Logging service, get full list of Ips logged.'
+    Properties:
+      Architectures:
+        - x86_64
+      Code:
+        ZipFile: |
+          const AWS = require('aws-sdk');
+
+          const dynamo = new AWS.DynamoDB();
+
+          exports.handler = async (event, context) => {
+              //remember to migrate all changes to cloudformation template. Code is inlined as part of template
+              let body;
+              let statusCode = '200';
+              const headers = {
+                  "Content-Type": "application/json",
+                  "Access-Control-Allow-Origin": "*",
+                  "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
+                  "Access-Control-Allow-Headers" : 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+                  "Access-Control-Allow-Credentials": true,
+              };
+
+              try {
+                  switch (event.httpMethod) {
+                      case 'GET':
+                          console.log("Getting all IP addresses")
+                          let getIPS = `SELECT * FROM "iplog"`
+                          const ips = await dynamo.executeStatement({Statement: getIPS}).promise();
+                          body = ips
+                          break;
+                      case 'OPTIONS':
+                          break;
+                      default:
+                          throw new Error(`Unsupported method "${event.httpMethod}"`);
+                  }
+              } catch (err) {
+                  statusCode = '400';
+                  console.log(err.message)
+                  body = {
+                      error: 'error getting IP addresses',
+                  };
+              } finally {
+                  console.log('Finaly', body, statusCode)
+                  body = JSON.stringify(body);
+                  console.log('return body', body, typeof body, 'header', headers)
+              }
+              return {
+                  statusCode,
+                  body,
+                  headers,
+              };
+          };
+      FunctionName: getIP
+      Handler: index.handler
+      PackageType: Zip
+      Role: !GetAtt lambdaIAMRole.Arn 
+      Runtime: nodejs14.x
+  postIPLambda:
+    Type: 'AWS::Lambda::Function'
+    Description: 'IP Logging service, post user public IP address.'
+    Properties:
+      Architectures:
+        - x86_64
+      Code:
+        ZipFile: |
+          const AWS = require('aws-sdk');
+
+          const dynamo = new AWS.DynamoDB();
+
+          exports.handler = async (event, context) => {
+              //remember to migrate all changes to cloudformation template. Code is inlined as part of template
+              let body;
+              let statusCode = '200';
+              const headers = {
+                  'Content-Type': 'application/json',
+              };
+
+              try {
+
+                  switch (event.httpMethod) {
+
+                      case 'POST':
+                          console.log('POST', event.body)
+                          const parseBody = JSON.parse(event.body)
+                          const postIP = parseBody?.ip || false
+                          const postUser = parseBody?.userid || false
+                          const postDate = parseBody?.date || false
+                          let postMeta = parseBody?.meta || false
+
+                          let insMeta = ''
+                          if (postMeta) {
+                              console.log("postMeta", postMeta)
+                                  for(const [key,val] of Object.entries(postMeta)){
+                                      insMeta = `${insMeta}, '${key}': '${val}'`
+                              }
+                          }
+                          let insStatement = `INSERT INTO "iplog" value {'ipaddress': '${postIP}', 'username': '${postUser}', 'logdate': '${postDate}'${insMeta}}`
+                          
+                          let updMeta = ''
+                          if (postMeta) {
+                              for(const [key,val] of Object.entries(postMeta)){
+                                  updMeta = `${updMeta}, ${key}='${val}'`
+                              }
+                          }
+                          let updStatement = `UPDATE iplog SET logdate='${postDate}' ${updMeta} WHERE ipaddress='${postIP}' AND username='${postUser}'`
+
+                          if(postIP && postUser) try {
+                              console.log('insert', insStatement)
+                              await dynamo.executeStatement({Statement: insStatement}).promise();
+                              body = {msg: `IP Logged: ${new Date().toISOString().replace('T', ' ').replace('Z','')}`}
+                              break;
+                          } catch {
+                              console.log('update', updStatement)
+                              await dynamo.executeStatement({Statement: updStatement}).promise();
+                              body = {msg: `IP Logged: ${new Date().toISOString().replace('T', ' ').replace('Z','')}`}
+                              break;
+                          }
+                          break;
+                      default:
+                          throw new Error(`Unsupported method "${event.httpMethod}"`);
+                  }
+              } catch (err) {
+                  statusCode = '400';
+                  console.log(err.message)
+                  body = {
+                      error: 'error processing request',
+                      params: 'ip, userid, date',
+                      ip: 'string',
+                      userid: 'string',
+                      date: 'string: YYYY-MM-DD',
+                      msg: 'error logging IP'
+                  };
+              } finally {
+                  console.log('Finaly', body, statusCode)
+                  body = JSON.stringify(body);
+              }
+              return {
+                  statusCode,
+                  body,
+                  headers,
+              };
+          };
+      FunctionName: logip
+      Handler: index.handler
+      PackageType: Zip
+      Role: !GetAtt lambdaIAMRole.Arn 
+      Runtime: nodejs14.x
+  lambdaIAMRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      Description: lambda IPLogger Role
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/CloudWatchFullAccess'
+      RoleName: IP_Logger_Lambda
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+  RolePolicies:
+    DependsOn: lambdaIAMRole
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: lambdaPolicy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'dynamodb:DeleteItem'
+              - 'dynamodb:GetItem'
+              - 'dynamodb:PutItem'
+              - 'dynamodb:Scan'
+              - 'dynamodb:UpdateItem'
+            Resource: '*'
+          - Effect: Allow
+            Action:
+              - 'dynamodb:PartiQLSelect'
+              - 'dynamodb:PartiQLInsert'
+              - 'dynamodb:PartiQLUpdate'
+            Resource: '*'
+          - Effect: Allow
+            Action: 'logs:CreateLogGroup'
+            Resource: '*'
+          - Effect: Allow
+            Action:
+              - 'logs:CreateLogGroup'
+              - 'logs:CreateLogStream'
+              - 'logs:PutLogEvents'
+            Resource: '*'
+      Roles:
+      - Ref: lambdaIAMRole
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
