@@ -1,0 +1,211 @@
+# Create Rest API
+  # create resources
+  # create methods
+  # attach to lambdas
+  # stages
+  # deployment
+  
+# get post working first?
+#then
+  # api keys
+  # enable cors
+  # require api key
+  # add custom domain name
+  # add cloudwatch logs roles
+
+  # customDomain:
+  #   Type: AWS::ApiGateway::DomainName
+  #   DependsOn: awsManagedCert
+  #   Properties: 
+  #     CertificateArn: !GetAtt awsManagedCert.Arn
+  #     DomainName: !Ref customDomainName
+  #     EndpointConfiguration: 
+  #         Types: 
+  #           - REGIONAL
+  #     SecurityPolicy: StTLS_1_2ring
+
+Parameters:
+  customDomainName:
+    Type: String
+    Description: Custom Domain Name for API.
+  HostedZoneId:
+    Type: String
+    Description: Hosted Zone ID for domain in route 53
+
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  awsManagedCert:
+    Type: AWS::CertificateManager::Certificate
+    Properties: 
+      DomainName: !Ref customDomainName
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: !Ref customDomainName
+          HostedZoneId: !Ref HostedZoneId
+  customDomain:
+    Type: AWS::ApiGateway::DomainName
+    DependsOn: awsManagedCert
+    Properties: 
+      RegionalCertificateArn: !Ref awsManagedCert
+      DomainName: !Ref customDomainName
+      EndpointConfiguration: 
+          Types: 
+            - REGIONAL
+      SecurityPolicy: TLS_1_2
+  apiMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties: 
+      DomainName: !Ref customDomainName
+      RestApiId: !Ref apiGateway
+      Stage: default
+  apiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties: 
+      Description: IP Logging API
+      EndpointConfiguration: 
+        Types:
+          - REGIONAL
+      Name: IP_API
+  logip:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref apiGateway
+      ParentId: !GetAtt apiGateway.RootResourceId
+      PathPart: logip
+  postLogIPsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: POST
+      ResourceId: !Ref logip
+      RestApiId: !Ref apiGateway
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !ImportValue postIPLambda
+        IntegrationResponses:
+          - StatusCode: 200
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels: { "application/json": "Empty" }
+  getips:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref apiGateway
+      ParentId: !GetAtt apiGateway.RootResourceId
+      PathPart: getips
+  getIPsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: true
+      AuthorizationType: NONE
+      HttpMethod: GET
+      ResourceId: !Ref getips
+      RestApiId: !Ref apiGateway
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !ImportValue getIPLambda
+        IntegrationResponses:
+          - StatusCode: 200
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels: { "application/json": "Empty" }
+  OptionsIPsMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: OPTIONS
+      ResourceId: !Ref getips
+      RestApiId: !Ref apiGateway
+      Integration:
+        Type: MOCK
+        IntegrationResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Credentials: "'true'"
+            method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+            method.response.header.Access-Control-Allow-Origin: "'*'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels: { "application/json": "Empty" }
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Credentials: "'true'"
+            method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+            method.response.header.Access-Control-Allow-Origin: "'*'"
+  apiKey:
+    Type: AWS::ApiGateway::ApiKey
+    Properties: 
+      Description: Get request api key
+      Name: getIPS
+      Enabled: true
+  deployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      Description: default deployment
+      RestApiId: !Ref apiGateway
+  usagePlan:
+    Type: AWS::ApiGateway::UsagePlan
+    Properties: 
+      Description: default usage paln
+      Throttle: 
+        BurstLimit: 25
+        RateLimit: 10
+      UsagePlanName: default
+      ApiStages:
+        - ApiId: !Ref apiGateway
+          Stage: default
+  useagePlanAssoc:
+    Type: AWS::ApiGateway::UsagePlanKey
+    Properties: 
+      KeyId: !Ref apiKey
+      KeyType: API_KEY
+      UsagePlanId: !Ref usagePlan
+  # domainName:
+  #   Type: AWS::ApiGateway::DomainName
+  #   Properties: 
+  #     CertificateArn: String
+  #     DomainName: api.gstreet.dev
+  #     EndpointConfiguration: 
+  #       EndpointConfiguration
+  #     MutualTlsAuthentication: 
+  #       MutualTlsAuthentication
+  #     OwnershipVerificationCertificateArn: String
+  #     RegionalCertificateArn: String
+  #     SecurityPolicy: String
+  #     Tags: 
+  #       - Tag
+  # ApiGatewayCloudWatchLogsRole:
+  #   Type: AWS::IAM::Role
+  #   Properties:
+  #     AssumeRolePolicyDocument:
+  #       Version: '2012-10-17'
+  #       Statement:
+  #         - Effect: Allow
+  #           Principal:
+  #             Service:
+  #               - apigateway.amazonaws.com
+  #           Action:
+  #             - sts:AssumeRole
+  #     Policies:
+  #       - PolicyName: ApiGatewayLogsPolicy
+  #         PolicyDocument:
+  #           Version: '2012-10-17'
+  #           Statement:
+  #             - Effect: Allow
+  #               Action:
+  #                 - logs:CreateLogGroup
+  #                 - logs:CreateLogStream
+  #                 - logs:DescribeLogGroups
+  #                 - logs:DescribeLogStreams
+  #                 - logs:PutLogEvents
+  #                 - logs:GetLogEvents
+  #                 - logs:FilterLogEvents
+  #               Resource: "*"
+  # ApiGatewayAccount:
+  #   Description: Role used to write cloudwatch logs
+  #   Type: AWS::ApiGateway::Account
+  #   Properties:
+  #     CloudWatchRoleArn: !GetAtt ApiGatewayCloudWatchLogsRole.Arn

@@ -199,7 +199,18 @@ Resources:
             Resource: '*'
       Roles:
       - Ref: lambdaIAMRole
-      
+Outputs:
+#  consumed by apiGateway.yml 
+  getIPLambda:
+    Value: !Sub 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${getIPLambda.Arn}/invocations'
+    Description: Get IP Lambda URI
+    Export: 
+      Name: getIPLambda
+  postIPLambda:
+    Value: !Sub 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${postIPLambda.Arn}/invocations'
+    Description: Post IP Lambda URI
+    Export: 
+      Name: postIPLambda
       
       
       
