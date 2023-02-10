@@ -5,24 +5,7 @@
   # stages
   # deployment
   
-# get post working first?
-#then
-  # api keys
-  # enable cors
-  # require api key
-  # add custom domain name
-  # add cloudwatch logs roles
-
-  # customDomain:
-  #   Type: AWS::ApiGateway::DomainName
-  #   DependsOn: awsManagedCert
-  #   Properties: 
-  #     CertificateArn: !GetAtt awsManagedCert.Arn
-  #     DomainName: !Ref customDomainName
-  #     EndpointConfiguration: 
-  #         Types: 
-  #           - REGIONAL
-  #     SecurityPolicy: StTLS_1_2ring
+# add cloudwatch logs roles
 
 Parameters:
   customDomainName:
