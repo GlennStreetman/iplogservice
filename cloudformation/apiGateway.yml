@@ -1,10 +1,3 @@
-# Create Rest API
-  # create resources
-  # create methods
-  # attach to lambdas
-  # stages
-  # deployment
-  
 # add cloudwatch logs roles
 
 Parameters:
@@ -146,49 +139,3 @@ Resources:
       KeyId: !Ref apiKey
       KeyType: API_KEY
       UsagePlanId: !Ref usagePlan
-  # domainName:
-  #   Type: AWS::ApiGateway::DomainName
-  #   Properties: 
-  #     CertificateArn: String
-  #     DomainName: api.gstreet.dev
-  #     EndpointConfiguration: 
-  #       EndpointConfiguration
-  #     MutualTlsAuthentication: 
-  #       MutualTlsAuthentication
-  #     OwnershipVerificationCertificateArn: String
-  #     RegionalCertificateArn: String
-  #     SecurityPolicy: String
-  #     Tags: 
-  #       - Tag
-  # ApiGatewayCloudWatchLogsRole:
-  #   Type: AWS::IAM::Role
-  #   Properties:
-  #     AssumeRolePolicyDocument:
-  #       Version: '2012-10-17'
-  #       Statement:
-  #         - Effect: Allow
-  #           Principal:
-  #             Service:
-  #               - apigateway.amazonaws.com
-  #           Action:
-  #             - sts:AssumeRole
-  #     Policies:
-  #       - PolicyName: ApiGatewayLogsPolicy
-  #         PolicyDocument:
-  #           Version: '2012-10-17'
-  #           Statement:
-  #             - Effect: Allow
-  #               Action:
-  #                 - logs:CreateLogGroup
-  #                 - logs:CreateLogStream
-  #                 - logs:DescribeLogGroups
-  #                 - logs:DescribeLogStreams
-  #                 - logs:PutLogEvents
-  #                 - logs:GetLogEvents
-  #                 - logs:FilterLogEvents
-  #               Resource: "*"
-  # ApiGatewayAccount:
-  #   Description: Role used to write cloudwatch logs
-  #   Type: AWS::ApiGateway::Account
-  #   Properties:
-  #     CloudWatchRoleArn: !GetAtt ApiGatewayCloudWatchLogsRole.Arn
