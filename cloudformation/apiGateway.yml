@@ -34,7 +34,7 @@ Resources:
       Name: !Ref customDomainName
       HostedZoneId: !Ref HostedZoneId
       AliasTarget: 
-        DNSName: !Ref customDomainName
+        DNSName: !GetAtt customDomain.RegionalDomainName
         EvaluateTargetHealth: false
         HostedZoneId: !GetAtt customDomain.RegionalHostedZoneId
       Type: A
