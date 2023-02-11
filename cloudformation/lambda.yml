@@ -149,6 +149,18 @@ Resources:
       PackageType: Zip
       Role: !GetAtt lambdaIAMRole.Arn 
       Runtime: nodejs14.x
+  getIPTrigger:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt getIPLambda.Arn
+      Principal: apigateway.amazonaws.com
+  postIPTrigger:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt postIPLambda.Arn
+      Principal: apigateway.amazonaws.com
   lambdaIAMRole:
     Type: 'AWS::IAM::Role'
     Properties:

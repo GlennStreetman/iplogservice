@@ -28,6 +28,16 @@ Resources:
           Types: 
             - REGIONAL
       SecurityPolicy: TLS_1_2
+  Route53ARecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Ref customDomainName
+      HostedZoneId: !Ref HostedZoneId
+      AliasTarget: 
+        DNSName: !Ref customDomainName
+        EvaluateTargetHealth: false
+        HostedZoneId: !GetAtt customDomain.RegionalHostedZoneId
+      Type: A
   apiMapping:
     Type: AWS::ApiGateway::BasePathMapping
     Properties: 
