@@ -1,0 +1,18 @@
+Parameters:
+  customDomainName:
+    Type: String
+    Description: Custom Domain Name for IP Logger static management site.
+  HostedZoneId:
+    Type: String
+    Description: Hosted Zone ID for domain in route 53
+
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  awsManagedCert:
+    Type: AWS::CertificateManager::Certificate
+    Properties: 
+      DomainName: !Ref customDomainName
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: !Ref customDomainName
+          HostedZoneId: !Ref HostedZoneId

@@ -1,0 +1,145 @@
+
+# route 53 A record
+
+
+Parameters:
+  customDomainName:
+    Type: String
+    Description: Custom Domain Name for IP Logger static management site.
+  HostedZoneId:
+    Type: String
+    Description: Hosted Zone ID for domain in route 53
+  BucketName:
+    Type: String
+    Description: AWS WIDE unique name for bucket.
+  CertficateARN:
+    Type: String
+    Description: Certficate Manager certficate, FROM us-east-1
+
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  staticSiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
+  staticSiteBucketLogging:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${BucketName}-logging
+  s3Origin:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Description: IP Management Static site origin
+        Name: staticIPManagementSiteOrigin
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+  cloudFrontIPPageCFDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties: 
+      DistributionConfig: 
+        Aliases: 
+          - !Ref customDomainName
+        Comment: ip logger management static site
+        DefaultCacheBehavior: 
+          TargetOriginId: ipwest.orgin.id
+          ViewerProtocolPolicy: redirect-to-https
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          Compress: Yes
+          FunctionAssociations:
+            - EventType: viewer-request
+              FunctionARN: !GetAtt authFunction.FunctionARN
+        DefaultRootObject: index.html
+        Enabled: true
+        HttpVersion: http2
+        IPV6Enabled: false
+        Origins: 
+          - DomainName: !GetAtt staticSiteBucket.DomainName
+            Id: ipwest.orgin.id
+            OriginAccessControlId: !GetAtt s3Origin.Id
+            S3OriginConfig: 
+              OriginAccessIdentity: ''
+        PriceClass: PriceClass_100
+        ViewerCertificate:
+          AcmCertificateArn: !Ref CertficateARN
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021
+        Logging:
+          Bucket: !GetAtt staticSiteBucketLogging.DomainName
+  authFunction:
+    Type: AWS::CloudFront::Function
+    Properties: 
+      AutoPublish: true
+      FunctionCode: |
+        function handler(event) {
+          var authHeaders = event.request.headers.authorization;
+        
+          // The Base64-encoded Auth string that should be present.
+          // It is an encoding of `Basic base64([username]:[password])`
+          // The username and password are:
+          //      Username: john
+          //      Password: foobar
+          var expected = "Basic am9objpmb29iYXI=";
+        
+          // If an Authorization header is supplied and it's an exact match, pass the
+          // request on through to CF/the origin without any modification.
+          if (authHeaders && authHeaders.value === expected) {
+            return event.request;
+          }
+        
+          // But if we get here, we must either be missing the auth header or the
+          // credentials failed to match what we expected.
+          // Request the browser present the Basic Auth dialog.
+          var response = {
+            statusCode: 401,
+            statusDescription: "Unauthorized",
+            headers: {
+              "www-authenticate": {
+                value: 'Basic realm="Enter credentials for this super secure site"',
+              },
+            },
+          };
+        
+          return response;
+        }
+      FunctionConfig: 
+        Comment: Simple HTTP Auth function for ip logging site.
+        Runtime: cloudfront-js-1.0
+      Name: ipAuth
+  StaticResourcesBucketPolicy:  
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref staticSiteBucket
+      PolicyDocument:
+        Version: '2008-10-17'
+        Id: !Sub s3-cloudfront-${customDomainName}
+        Statement:
+          - Sid: !Sub allow-cloudfront-s3-${customDomainName}
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub arn:aws:s3:::${staticSiteBucket}/*
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${cloudFrontIPPageCFDistribution}
+  Route53ARecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Ref customDomainName
+      HostedZoneId: !Ref HostedZoneId
+      AliasTarget: 
+        DNSName: !GetAtt cloudFrontIPPageCFDistribution.DomainName
+        EvaluateTargetHealth: false
+        HostedZoneId: Z2FDTNDATAQYW2
+      Type: A
+
+  
+
+  # OriginAccessIdentity:
+  #   Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+  #   Properties:
+  #     CloudFrontOriginAccessIdentityConfig:
+  #       Comment: !Sub ${AWS::StackName}-s3-origin-origin-access-identityv
+
