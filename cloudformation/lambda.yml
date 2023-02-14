@@ -167,7 +167,7 @@ Resources:
       Description: lambda IPLogger Role
       ManagedPolicyArns:
         - 'arn:aws:iam::aws:policy/CloudWatchFullAccess'
-      RoleName: IP_Logger_Lambda
+      RoleName: !Sub IP_Logger_Lambda_${AWS::Region}
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:

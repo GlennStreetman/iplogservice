@@ -3,7 +3,7 @@
 Parameters:
   customDomainName:
     Type: String
-    Description: Custom Domain Name for API.
+    Description: Custom subdomain name for the api logging services API endpoints. ex. api.yourdomain.com
   HostedZoneId:
     Type: String
     Description: Hosted Zone ID for domain in route 53
@@ -39,6 +39,7 @@ Resources:
         HostedZoneId: !GetAtt customDomain.RegionalHostedZoneId
       Type: A
   apiMapping:
+    DependsOn: customDomain
     Type: AWS::ApiGateway::BasePathMapping
     Properties: 
       DomainName: !Ref customDomainName
@@ -52,6 +53,12 @@ Resources:
         Types:
           - REGIONAL
       Name: IP_API
+  defaultStage:
+    Type: AWS::ApiGateway::Stage
+    Properties: 
+      RestApiId: !Ref apiGateway
+      DeploymentId: !Ref deployment
+      StageName: default
   logip:
     Type: AWS::ApiGateway::Resource
     Properties:
@@ -134,6 +141,9 @@ Resources:
       Enabled: true
   deployment:
     Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - postLogIPsMethod
+      - getIPsMethod
     Properties:
       Description: default deployment
       RestApiId: !Ref apiGateway
@@ -147,7 +157,7 @@ Resources:
       UsagePlanName: default
       ApiStages:
         - ApiId: !Ref apiGateway
-          Stage: default
+          Stage: !Ref defaultStage
   useagePlanAssoc:
     Type: AWS::ApiGateway::UsagePlanKey
     Properties: 
