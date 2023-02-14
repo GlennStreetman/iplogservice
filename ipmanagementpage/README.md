@@ -6,6 +6,7 @@
 
 ## build
 
+> npm install
 > npm run build
 
 ### .env setup
@@ -14,5 +15,5 @@ REACT_APP_url = getIP lambda URL
 
 ### .env file
 
-apiURL=api.example.com
+apiURL=api.yourdomain.com/getips
 apikey=xxxxxxxxxxxxxx
