@@ -97,6 +97,8 @@ Resources:
       MethodResponses:
         - StatusCode: 200
           ResponseModels: { "application/json": "Empty" }
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Origin: "'*'"
   OptionsIPsMethod:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -106,6 +108,9 @@ Resources:
       RestApiId: !Ref apiGateway
       Integration:
         Type: MOCK
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestTemplates:
+          "application/json": "'statusCode: 200'"
         IntegrationResponses:
         - StatusCode: 200
           ResponseParameters:
