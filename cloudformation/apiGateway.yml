@@ -1,4 +1,5 @@
 # add cloudwatch logs roles
+# setup logging
 
 Parameters:
   customDomainName:
@@ -117,9 +118,11 @@ Resources:
         Type: MOCK
         PassthroughBehavior: WHEN_NO_MATCH
         RequestTemplates:
-          "application/json": "'statusCode: 200'"
+          application/json: | 
+            { statusCode: 200 }
         IntegrationResponses:
         - StatusCode: 200
+          ResponseTemplates: { "application/json": "" }
           ResponseParameters:
             method.response.header.Access-Control-Allow-Credentials: "'true'"
             method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"

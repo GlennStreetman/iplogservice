@@ -8,14 +8,14 @@ Parameters:
     Default: '5'
     MinValue: '5'
     MaxValue: '10000'
-    ConstraintDescription: must be between 5 and 10000
+    ConstraintDescription:  DynamoDB Read Capacity. Must be between 5 and 10000
   WriteCapacityUnits:
     Description: Provisioned write throughput
     Type: Number
     Default: '10'
     MinValue: '5'
     MaxValue: '10000'
-    ConstraintDescription: must be between 5 and 10000
+    ConstraintDescription: DynamoDB Write Capacity. Must be between 5 and 10000
 Resources:
   iplog:
     Type: AWS::DynamoDB::Table
@@ -36,8 +36,8 @@ Resources:
           Ref: ReadCapacityUnits
         WriteCapacityUnits:
           Ref: WriteCapacityUnits
-Outputs:
-  TableName:
-    Value:
-      Ref: iplog
-    Description: DynamoDB table that keeps track of logged IPs
+# Outputs:
+#   TableName:
+#     Value:
+#       Ref: iplog
+#     Description: DynamoDB table that keeps track of logged IPs

@@ -1,10 +1,10 @@
 Parameters:
   customDomainName:
     Type: String
-    Description: Custom Domain Name for IP Logger static management site.
+    Description: Custom Domain Name for IP Logger static management site. Ex. ip.yourdomain.com
   HostedZoneId:
     Type: String
-    Description: Hosted Zone ID for domain in route 53
+    Description: Hosted Zone ID for domain in route 53. ex. Z05555361VSA5A0AX8PEO
 
 AWSTemplateFormatVersion: '2010-09-09'
 Resources:
