@@ -1,4 +1,4 @@
-async function postIP(url, data, updateMsg=false) {
+async function postIP(url, data, setMsg=undefined) {
     try{
         console.log('posting IP update')
         const formatData = JSON.stringify(data)
@@ -13,11 +13,11 @@ async function postIP(url, data, updateMsg=false) {
             body: formatData // body data type must match "Content-Type" header
         })
         const format = await response.json()
-        if(format?.msg) updateMsg(format.msg)
+        if(format?.msg && setMsg) setMsg(format.msg)
         chrome.storage.sync.set({"myIP": data.ip})
     } catch(err){
         console.log('Error Logging IP: ', err)
-        if (updateMesg) updateMsg('Error loggin IP, review webhook and check logs')
+        if (setMsg) setMsg('Error loggin IP, review webhook and check logs')
     }
 }
 

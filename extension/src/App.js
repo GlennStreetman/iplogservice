@@ -19,7 +19,7 @@ function App() {
     const [newIP, setNewIP] = useState(false)
     const [params, setParams] = useState()
     const [newParam, setNewParam] = useState('')
-    const [msg, updateMsg] = useState()
+    const [msg, setMsg] = useState()
 
     function addNewParam(){
         const newParamsArray = {...params, [newParam]: ''}
@@ -37,7 +37,7 @@ function App() {
                 date: todayDate,
             }
             if (params) data['meta'] = params
-            postIP(hook, data, updateMsg)
+            postIP(hook, data, setMsg)
         }
     }
 
@@ -70,6 +70,7 @@ function App() {
             })
             .catch((error)=>{
                 console.log('Error retrieving API from https://api.ipify.org?format=json', error)
+                setMsg('Unable to retrieve Public IP from api.ipify.org')
             })
         });
     },[])
