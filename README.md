@@ -71,6 +71,8 @@ This guide assumes you have already purchased a domain name and it's part of an 
 Cloudformation will require an [IAM](https://aws.amazon.com/iam/) role with necessary permissions to deploy the backend Cloudformation stacks.
 If you do not already have a CloudFormation role setup navigate to IAM in the AWS console and create a role with the trust relationship shown below. Attach "AdministratorAccess" permission to the role.
 
+It's recommended that you create your stacks in us-east-1.
+
 ```
 {
     "Version": "2012-10-17",
@@ -87,7 +89,7 @@ If you do not already have a CloudFormation role setup navigate to IAM in the AW
 }
 ```
 
-With your CloudFormation role created, and your domain added to your AWS Route53 hosted zone:
+With your CloudFormation role created and your domain added to your AWS Route53 hosted zone:
 
 1. Login to AWS console and navigate to route53, click hosted zones, and select the desired hosted zone name hyperlink.
 2. Click "hosted zone details" and take note of the "hosted zone Id". You will need it while setting up CloudFormation stacks.
@@ -149,3 +151,5 @@ Your static site is protected by a CloudFront function that uses a default usern
 
 Curl can be used to test your API enpoints
 > curl -v --header "x-api-key: yourapikeystring" -X GET https://api.yourdomain.com/getips
+
+Chrome extension documentation is available @: [https://developer.chrome.com/docs/extensions/](https://developer.chrome.com/docs/extensions/)

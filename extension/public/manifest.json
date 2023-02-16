@@ -1,7 +1,8 @@
 {
-  "short_name": "Chrome IP Hook",
-  "name": "Chrome IP Logger Hook",
+  "short_name": "IP.Spy",
+  "name": "IP.Spy",
   "version": "1.0",
+  "desciption": "Find your public IP and log it using a webhook.",
   "manifest_version": 3,
   "action": {
     "default_popup": "popup.html",
