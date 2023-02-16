@@ -2,50 +2,50 @@
 # setup logging
 
 Parameters:
-  customDomainName:
-    Type: String
-    Description: Custom subdomain name for the api logging services API endpoints. ex. api.yourdomain.com
+  # customDomainName:
+  #   Type: String
+  #   Description: Custom subdomain name for the api logging services API endpoints. ex. api.yourdomain.com
   HostedZoneId:
     Type: String
     Description: Hosted Zone ID for domain in route 53
 
 AWSTemplateFormatVersion: '2010-09-09'
 Resources:
-  awsManagedCert:
-    Type: AWS::CertificateManager::Certificate
-    Properties: 
-      DomainName: !Ref customDomainName
-      ValidationMethod: DNS
-      DomainValidationOptions:
-        - DomainName: !Ref customDomainName
-          HostedZoneId: !Ref HostedZoneId
-  customDomain:
-    Type: AWS::ApiGateway::DomainName
-    DependsOn: awsManagedCert
-    Properties: 
-      RegionalCertificateArn: !Ref awsManagedCert
-      DomainName: !Ref customDomainName
-      EndpointConfiguration: 
-          Types: 
-            - REGIONAL
-      SecurityPolicy: TLS_1_2
-  Route53ARecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      Name: !Ref customDomainName
-      HostedZoneId: !Ref HostedZoneId
-      AliasTarget: 
-        DNSName: !GetAtt customDomain.RegionalDomainName
-        EvaluateTargetHealth: false
-        HostedZoneId: !GetAtt customDomain.RegionalHostedZoneId
-      Type: A
-  apiMapping:
-    DependsOn: customDomain
-    Type: AWS::ApiGateway::BasePathMapping
-    Properties: 
-      DomainName: !Ref customDomainName
-      RestApiId: !Ref apiGateway
-      Stage: default
+  # awsManagedCert:
+  #   Type: AWS::CertificateManager::Certificate
+  #   Properties: 
+  #     DomainName: !Ref customDomainName
+  #     ValidationMethod: DNS
+  #     DomainValidationOptions:
+  #       - DomainName: !Ref customDomainName
+  #         HostedZoneId: !Ref HostedZoneId
+  # customDomain:
+  #   Type: AWS::ApiGateway::DomainName
+  #   DependsOn: awsManagedCert
+  #   Properties: 
+  #     RegionalCertificateArn: !Ref awsManagedCert
+  #     DomainName: !Ref customDomainName
+  #     EndpointConfiguration: 
+  #         Types: 
+  #           - REGIONAL
+  #     SecurityPolicy: TLS_1_2
+  # Route53ARecord:
+  #   Type: AWS::Route53::RecordSet
+  #   Properties:
+  #     Name: !Ref customDomainName
+  #     HostedZoneId: !Ref HostedZoneId
+  #     AliasTarget: 
+  #       DNSName: !GetAtt customDomain.RegionalDomainName
+  #       EvaluateTargetHealth: false
+  #       HostedZoneId: !GetAtt customDomain.RegionalHostedZoneId
+  #     Type: A
+  # apiMapping:
+  #   DependsOn: customDomain
+  #   Type: AWS::ApiGateway::BasePathMapping
+  #   Properties: 
+  #     DomainName: !Ref customDomainName
+  #     RestApiId: !Ref apiGateway
+  #     Stage: default
   apiGateway:
     Type: AWS::ApiGateway::RestApi
     Properties: 
@@ -60,11 +60,17 @@ Resources:
       RestApiId: !Ref apiGateway
       DeploymentId: !Ref deployment
       StageName: default
-  logip:
+  apiEntryPoint:
     Type: AWS::ApiGateway::Resource
     Properties:
       RestApiId: !Ref apiGateway
       ParentId: !GetAtt apiGateway.RootResourceId
+      PathPart: api
+  logip:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref apiGateway
+      ParentId: !Ref apiEntryPoint
       PathPart: logip
   postLogIPsMethod:
     Type: AWS::ApiGateway::Method
@@ -86,12 +92,12 @@ Resources:
     Type: AWS::ApiGateway::Resource
     Properties:
       RestApiId: !Ref apiGateway
-      ParentId: !GetAtt apiGateway.RootResourceId
+      ParentId: !Ref apiEntryPoint
       PathPart: getips
   getIPsMethod:
     Type: AWS::ApiGateway::Method
     Properties:
-      ApiKeyRequired: true
+      # ApiKeyRequired: true
       AuthorizationType: NONE
       HttpMethod: GET
       ResourceId: !Ref getips
@@ -136,12 +142,12 @@ Resources:
             method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
             method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
             method.response.header.Access-Control-Allow-Origin: "'*'"
-  apiKey:
-    Type: AWS::ApiGateway::ApiKey
-    Properties: 
-      Description: Get request api key
-      Name: getIPS
-      Enabled: true
+  # apiKey:
+  #   Type: AWS::ApiGateway::ApiKey
+  #   Properties: 
+  #     Description: Get request api key
+  #     Name: getIPS
+  #     Enabled: true
   deployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
@@ -161,9 +167,21 @@ Resources:
       ApiStages:
         - ApiId: !Ref apiGateway
           Stage: !Ref defaultStage
-  useagePlanAssoc:
-    Type: AWS::ApiGateway::UsagePlanKey
-    Properties: 
-      KeyId: !Ref apiKey
-      KeyType: API_KEY
-      UsagePlanId: !Ref usagePlan
+  # useagePlanAssoc:
+  #   Type: AWS::ApiGateway::UsagePlanKey
+  #   Properties: 
+  #     KeyId: !Ref apiKey
+  #     KeyType: API_KEY
+  #     UsagePlanId: !Ref usagePlan
+Outputs:
+#  consumed by ipmanagementpage.yml 
+  apiGatewayInvokeURL:
+    Value:  !Sub "${apiGateway}.execute-api.${AWS::Region}.amazonaws.com"
+    Description: Invoke URL for api gateway
+    Export: 
+      Name: apiInvokeUrl
+  defaultStage:
+    Value:  !Sub /${defaultStage}
+    Description: Default Stage Name
+    Export: 
+      Name: defaultStage

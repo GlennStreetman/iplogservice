@@ -50,25 +50,52 @@ Resources:
         Aliases: 
           - !Ref customDomainName
         Comment: ip logger management static site
-        DefaultCacheBehavior: 
-          TargetOriginId: !Sub iplogger-origin-${AWS::Region}
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+            - OPTIONS         
+          TargetOriginId: !Ref customDomainName
           ViewerProtocolPolicy: redirect-to-https
           CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
           Compress: Yes
+          OriginRequestPolicyId: "88a5eaf4-2fd4-4709-b370-b4c650ea3fcf"
+          ResponseHeadersPolicyId: "eaab4381-ed33-4a86-88ca-d9558dc6cd63"
           FunctionAssociations:
             - EventType: viewer-request
               FunctionARN: !GetAtt authFunction.FunctionARN
+        CacheBehaviors:
+          - AllowedMethods: 
+              - GET
+              - HEAD
+              - DELETE
+              - POST
+              - OPTIONS
+              - PUT
+              - PATCH
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            Compress: True
+            PathPattern: /api*
+            TargetOriginId: !Sub "${customDomainName}/api"
+            ViewerProtocolPolicy: redirect-to-https
         DefaultRootObject: index.html
         Enabled: true
         HttpVersion: http2
         IPV6Enabled: false
         Origins: 
           - DomainName: !GetAtt staticSiteBucket.DomainName
-            Id: !Sub iplogger-origin-${AWS::Region}
+            Id: !Ref customDomainName
             OriginAccessControlId: !GetAtt s3Origin.Id
             S3OriginConfig: 
               OriginAccessIdentity: ''
-        PriceClass: PriceClass_100
+          - DomainName: !ImportValue apiInvokeUrl
+            Id: !Sub "${customDomainName}/api"
+            OriginPath: !ImportValue defaultStage
+            CustomOriginConfig:
+              HTTPSPort: 443
+              OriginProtocolPolicy: 'https-only'
+              OriginSSLProtocols: 
+                - TLSv1.2
         ViewerCertificate:
           AcmCertificateArn: !Ref CertficateARN
           SslSupportMethod: sni-only
