@@ -1,6 +1,6 @@
 async function postIP(url, data, setMsg=undefined) {
     try{
-        console.log('posting IP update')
+        console.log('posting IP update', url)
         const formatData = JSON.stringify(data)
         const response = await fetch(url, {
             method: 'POST', // *GET, POST, PUT, DELETE, etc.
