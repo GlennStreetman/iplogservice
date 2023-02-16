@@ -19,7 +19,8 @@ function App() {
     const [IPList, setIPList] = useState()
 
     useEffect(()=>{
-        fetch(`${process.env.REACT_APP_apiURL}`, {method:'GET', headers: {"x-api-key": process.env.REACT_APP_apiKey}, 'Content-Type': 'application/json'})
+        fetch(`/api/getips`, {method:'GET', 'Content-Type': 'application/json'})
+        // fetch(`/api/getips`, {method:'GET', headers: {"x-api-key": process.env.REACT_APP_apiKey}, 'Content-Type': 'application/json'})
         .then((response) => response.json())
         .then((data) => setIps(data))
         .catch((err)=>{console.log(err)})    
