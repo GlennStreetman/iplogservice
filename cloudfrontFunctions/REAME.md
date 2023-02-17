@@ -1,0 +1,1 @@
+Basic [CloudFront Function](https://aws.amazon.com/blogs/aws/introducing-cloudfront-functions-run-your-code-at-the-edge-with-low-latency-at-any-scale/) used to protect your IP management site.
