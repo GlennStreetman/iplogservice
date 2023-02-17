@@ -1,20 +1,20 @@
 # A Distributed IP Logging service
 
-## Use Cases: Regulary log Ip's for all the members of a group/team. While chrome is running it will log the users IP every 30 minutes. Useful for creating IP white/blacklists for metrics, security purposes, etc
+## Use Cases: Log Ip's for all the members of a group/team. While chrome is running it will log the users IP every 30 minutes. Useful for creating IP white/blacklists for metrics, security purposes, etc.
 
 ## Use a client-side browser extension to capture IPs
 
-- A client-side browser extension, built using React, for chrome.
+- A client-side browser extension built using React, for chrome.
 - User configurable webhook allows logging IP to specified API endpoint.
 - Tag IP addresses with user defined key/value pairs, useful for filtering & sorting IP data.
 
 ## Use AWS serverless architecture to store and review logged IPs
 
 - Serverless architecture uses [API Gateway](https://aws.amazon.com/api-gateway/), [Lambda](https://aws.amazon.com/lambda/), [CloudFront CDN](https://aws.amazon.com/cloudfront/), [DynamoDB](https://aws.amazon.com/dynamodb/).
-- Easily Deployed using [Cloudformation](https://aws.amazon.com/cloudformation/) scripts to your AWS account.
+- Easily Deployed using [CloudFormation](https://aws.amazon.com/CloudFormation/) scripts to your AWS account.
 - Minimize costs by avoiding paying for compute, virtual machines, or containers.
 
-## Requirements to fully deploy this project
+## Requirements
 
 - Nodejs to compile your browser extension. (Installed with v14.x)
 - An AWS Account
@@ -22,7 +22,7 @@
 
 ### Folder Structure
 
-- Cloudformation: Deployment Scripts for your AWS architecture
+- CloudFormation: Deployment Scripts for your AWS architecture
 - extension: The client-side web application used to log IPs.
 - ipmanagementPage: A simple static site for reviewing logged ips
 - lambda: Source code for backend APIs.
@@ -53,7 +53,7 @@
 
 ![Pin Installations](./img/pintExtension.png)
 
-7. Open the extension and set webhook and username/email. Note that provided Cloudformation template will deploy login API endpoint to yourdomain.com/api/logip
+7. Open the extension and set webhook and username/email. Note that provided CloudFormation template will deploy login API endpoint to yourdomain.com/api/logip
 
 ![update setup](./img/update.png)
 
@@ -69,7 +69,7 @@
 
 Backend services can be setup using the AWS console.
 This guide assumes you have already purchased a domain name and it's part of an [AWS route53 hosted zone](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/hosted-zones-working-with.html).
-Cloudformation will require an [IAM](https://aws.amazon.com/iam/) role with necessary permissions to deploy the backend Cloudformation stacks.
+CloudFormation will require an [IAM](https://aws.amazon.com/iam/) role with necessary permissions to deploy the backend CloudFormation stacks.
 If you do not already have a CloudFormation role setup navigate to IAM in the AWS console and create a role with the trust relationship shown below. Attach "AdministratorAccess" permission to the role.
 
 It's recommended that you create your stacks in us-east-1.
@@ -82,7 +82,7 @@ It's recommended that you create your stacks in us-east-1.
             "Sid": "",
             "Effect": "Allow",
             "Principal": {
-                "Service": "cloudformation.amazonaws.com"
+                "Service": "Cloudformation.amazonaws.com"
             },
             "Action": "sts:AssumeRole"
         }
@@ -94,9 +94,9 @@ With your CloudFormation role created and your domain added to your AWS Route53 
 
 1. Login to AWS console and navigate to route53, click hosted zones, and select the desired hosted zone name hyperlink.
 2. Click "hosted zone details" and take note of the "hosted zone Id". You will need it while setting up CloudFormation stacks.
-3. Navigate to "Cloudformation" in the AWS. This applications cloud formation stacks should be able to be deployed to most regions. However, the A-Record for the stack management page needs to be hosted in us-east-1 to meet CloudFormation requirements. Make sure your current region is us-east-1
+3. Navigate to "CloudFormation" in the AWS. This applications cloud formation stacks should be able to be deployed to most regions. However, the A-Record for the stack management page needs to be hosted in us-east-1 to meet CloudFormation requirements. Make sure your current region is us-east-1
 4. Click "create stack" & select "with new resource".
-5. Click "template is ready" -> upload a template file -> choose file -> navigate to ./cloudformation and select "ipManagment.us-east-1.yml" then click next.
+5. Click "template is ready" -> upload a template file -> choose file -> navigate to ./CloudFormation and select "ipManagment.us-east-1.yml" then click next.
 
 ![new stack](./img/newstack.png)
 
@@ -143,7 +143,7 @@ Navigate to s3 in the AWS console. Find the CloudFormation bucket for your site.
 
 ## Developers Notes
 
-If your primary domain is already in use the cloudformation scripts will allow you to use a subdomain for your backend services. Instead of using yourdomain.com you could use ip.yourdomain.com
+If your primary domain is already in use the CloudFormation scripts will allow you to use a subdomain for your backend services. Instead of using yourdomain.com you could use ip.yourdomain.com
 
 Your static management page is deployed using the global Content Delivery Network(CDN) CloudFront. CloudFront will cache old versions of your site for up to 24 hours. If you make an update to your management site and want to immediately see the changes you can [create an invalidation in CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Invalidation.html) or add a query paramater to your domain name ex. yourdomain.com?1=1
 
