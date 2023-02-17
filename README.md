@@ -61,7 +61,7 @@
 
 ![update parameters](./img/param.png)
 
-9. After completing backend setup; Verify backend setup is working, and webhook is configured, by clicking Log IP:
+9. Click Log IP to verify setup. (Backend Setup needs to be complete for this to work)
 
 ![Log IP](./img/log.png)
 
@@ -108,7 +108,7 @@ With your CloudFormation role created and your domain added to your AWS Route53 
 
 ![stack details](./img/setRole.png)
 
-8. Review your setup then click "Submit". 
+8. Review your setup then click "Submit".
 
 9. You should be taken to your new stacks "events" screen. Wait for the create of your stack to reach the complete stage:
 
