@@ -1,14 +1,14 @@
 # A Distributed IP Logging service
 
-## Use Cases: Log IP addresses, on a regular schedule, for all the members of a group/team. While chrome is running it will log the users IP every 30 minutes. Useful for creating IP white/blacklists for metrics, security purposes, etc.
+## Use Cases: Regulary log Ip's for all the members of a group/team. While chrome is running it will log the users IP every 30 minutes. Useful for creating IP white/blacklists for metrics, security purposes, etc
 
-## Use a client-side browser extension to capture IPs.
+## Use a client-side browser extension to capture IPs
 
 - A client-side browser extension, built using React, for chrome.
 - User configurable webhook allows logging IP to specified API endpoint.
 - Tag IP addresses with user defined key/value pairs, useful for filtering & sorting IP data.
 
-## Use AWS serverless architecture to store and review logged IPs.
+## Use AWS serverless architecture to store and review logged IPs
 
 - Serverless architecture uses [API Gateway](https://aws.amazon.com/api-gateway/), [Lambda](https://aws.amazon.com/lambda/), [CloudFront CDN](https://aws.amazon.com/cloudfront/), [DynamoDB](https://aws.amazon.com/dynamodb/).
 - Easily Deployed using [Cloudformation](https://aws.amazon.com/cloudformation/) scripts to your AWS account.
@@ -26,16 +26,17 @@
 - extension: The client-side web application used to log IPs.
 - ipmanagementPage: A simple static site for reviewing logged ips
 - lambda: Source code for backend APIs.
- 
+- img: images used in this guide.
+
  Additional implementation details available in subfolder Readme.md files.
 
-## Client-Side Installation & Setup:
+## Client-Side Installation & Setup
 
-##### Required [Node Package Manager(NPM)](https://www.npmjs.com/)
+### Required [Node Package Manager(NPM)](https://www.npmjs.com/)
 
 1. Run the following commands from the CLI:
 
-```
+```CLI
 > cd /extension
 > npm install
 > npm run build
@@ -46,25 +47,25 @@
 4. Navigate to ./extension/dist and click "select folder"
 5. Verify that installation was successful:
 
-![Extension Installed](./extensionInstalled.png)
+![Extension Installed](./img/extensionInstalled.png)
 
 6. Consider pinning the extension while verifying setup:
 
-![Pin Installations](./pintExtension.png)
+![Pin Installations](./img/pintExtension.png)
 
-7. Open the extension and set webhook and username/email. Note that provided Cloudformation template will deploy login API endpoint to https://yourdomain.com/logip
+7. Open the extension and set webhook and username/email. Note that provided Cloudformation template will deploy login API endpoint to yourdomain.com/api/logip
 
-![update setup](./update.png)
+![update setup](./img/update.png)
 
 8. Add any additional IP key/value pair tags by using the "New Query Parameter" option
 
-![update parameters](./param.png)
+![update parameters](./img/param.png)
 
 9. After completing backend setup; Verify backend setup is working, and webhook is configured, by clicking Log IP:
 
-![Log IP](./log.png)
+![Log IP](./img/log.png)
 
-## Backend Setup:
+## Backend Setup
 
 Backend services can be setup using the AWS console.
 This guide assumes you have already purchased a domain name and it's part of an [AWS route53 hosted zone](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/hosted-zones-working-with.html).
@@ -73,7 +74,7 @@ If you do not already have a CloudFormation role setup navigate to IAM in the AW
 
 It's recommended that you create your stacks in us-east-1.
 
-```
+```JSON
 {
     "Version": "2012-10-17",
     "Statement": [
@@ -97,23 +98,23 @@ With your CloudFormation role created and your domain added to your AWS Route53 
 4. Click "create stack" & select "with new resource".
 5. Click "template is ready" -> upload a template file -> choose file -> navigate to ./cloudformation and select "ipManagment.us-east-1.yml" then click next.
 
-![new stack](./newstack.png)
+![new stack](./img/newstack.png)
 
 6. Setup your stack details. See instructions shown below. Fill everything out then hit next.
 
-![stack details](./stackParams.png)
+![stack details](./img/stackParams.png)
 
-6. Select the role you configured for CloudFormation then click next.
+7. Select the role you configured for CloudFormation then click next.
 
-![stack details](./setRole.png)
+![stack details](./img/setRole.png)
 
-7. Review your setup then click "Submit". 
+8. Review your setup then click "Submit". 
 
-8. You should be taken to your new stacks "events" screen. Wait for the create of your stack to reach the complete stage:
+9. You should be taken to your new stacks "events" screen. Wait for the create of your stack to reach the complete stage:
 
-![Complete](./stackComplete.png)
+![Complete](./img/stackComplete.png)
 
-9. If you have a desired deployment region, you can now switch to that region ex. "us-west-1"
+10. If you have a desired deployment region, you can now switch to that region ex. "us-west-1". It is recommended that your deploy to us-east-1.
 
 ### Repeat the above steps above for the remaining CloudFormation templates in the order shown below. Stack parameter values shown as bullet points and used in step 6
 
@@ -122,34 +123,36 @@ With your CloudFormation role created and your domain added to your AWS Route53 
     - writeCapacityUnits: 10 <-- minimum amount, increase as needed.
 2. lambda.yml: Creates Lambda Functions that retrieve and store IPs in dynamo
 3. apiGateway.yml: Creates API endpoints that interact with Lambdas
-    - customDomainName: api.yourdomainname.com <-- update yourdomainname
     - HostedZoneId: alpha numeric string noted in step 2.
 4. ipmanagementpage.yml: Deploys a simple static webpage for reviewing stored IPs.
-    - customDomainName: ip.yourdomainname.com <-- update yourdomainname
+    - customDomainName: yourdomain.com <-- update yourdomain
     - HostedZoneId: string noted in step 2.
     - CertficateARN: Amazon Resource Name(ARN) for certificate created in step 1. Go to us-east-1, Certficate manager, select your certficate, and copy the ARN.
     - username: site username
     - password: site password
 
-10. After all stack deployments are complete you need to compile your static site and upload it to the s3 site bucket that was created by your IP Management Page stack. See the readme in /ipmanagementpage for instructions on .env file and build commands. Your API key should have been created by the API Gateway stack. In the AWs console, navigate to API Gateway, select your API, select API Keys, click your API key (you may need to scroll up) then click "show".
+ After all stack deployments are complete you need to compile your static site and upload it to the s3.
 
-```
+```CLI
 > cd ./ipmanagementpage
-> touch .env <-- see readme.md in /ipmanagementpage for setup instructions.
 > npm install
 > npm run build
 ```
 
-11. With build complete, navigate to s3 in the AWS console. Find the CloudFormation bucket for your site(no the logging bucket). Click the bucket name, upload, and upload both the files and folders from ./ipmanagementpage/build
+Navigate to s3 in the AWS console. Find the CloudFormation bucket for your site. Click the bucket name, click upload, and upload both the files and folders from ./ipmanagementpage/build.
 
+## Developers Notes
 
-## Developers Notes:
+If your primary domain is already in use the cloudformation scripts will allow you to use a subdomain for your backend services. Instead of using yourdomain.com you could use ip.yourdomain.com
 
-Your static management page is deployed using the global content delivery network (CDN) Cloudformation. If you make any modifications to the site, then upload the changes to s3, you will not immediately be able to see the changes. It can take up to 24 hours for the CDN cache to reach end of life(TTL) and get replated. If you go to CloudFront in the AWS console you can create an invalidation to immediately be able to review your changes. To invalidate everything enter " /* " in the invalidation config box.
+Your static management page is deployed using the global Content Delivery Network(CDN) CloudFront. CloudFront will cache old versions of your site for up to 24 hours. If you make an update to your management site and want to immediately see the changes you can [create an invalidation in CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Invalidation.html) or add a query paramater to your domain name ex. yourdomain.com?1=1
 
-Your static site is protected by a CloudFront function that uses a default username and password: john/foobar. See ./cloudfrontFunction/auth.js for instructions on how to update the code. Any changes to auth.js need to migrated over to ./cloudformation/ipmanagementpage.yml then the stack needs to be updated. See authFunction -> FunctionCode in the .yml file.
+Use curl to verify that your API endpoints are working correctly
 
-Curl can be used to test your API enpoints
-> curl -v --header "x-api-key: yourapikeystring" -X GET https://api.yourdomain.com/getips
+> curl -v -X GET https://yourdomain.com/api/getips
 
-Chrome extension documentation is available @: [https://developer.chrome.com/docs/extensions/](https://developer.chrome.com/docs/extensions/)
+> curl -v -X POST -H "Content-Type: application/json" -d '{"ip":"9.9.9.9", "userid":"testuser","date":"1999-12-31"}' https://yourdomain.com/api/logip
+
+If your static site returns a "403: Not authorized" error changes are you forgot to upload your static site to s3.
+
+Chrome extension documentation is available at: [https://developer.chrome.com/docs/extensions/](https://developer.chrome.com/docs/extensions/). WIth a [Chrome Developer Account](https://developer.chrome.com/docs/webstore/register/) you can publish your own extension build and share it with your team. Warning, it can take some time for your app to get approved.

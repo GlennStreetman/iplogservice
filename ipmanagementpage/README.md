@@ -9,11 +9,4 @@
 > npm install
 > npm run build
 
-### .env setup
-
-REACT_APP_url = getIP lambda URL
-
-### .env file
-
-apiURL=api.yourdomain.com/getips
-apikey=xxxxxxxxxxxxxx
+Output files are saved in /build. The contents of the folder should be uploaded to the s3 site bucket created by Cloudformation.
